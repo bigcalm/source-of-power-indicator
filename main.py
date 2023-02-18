@@ -2,7 +2,6 @@ import configparser
 # from machine import Pin
 import requests
 import time
-import json
 
 config = configparser.ConfigParser()
 config.read("./config.ini")
@@ -40,7 +39,7 @@ while True:
     for item in items:
 
         response = requests.get(home_assistant_api_url_base + item["sensor"], headers = headers)
-        response_dict = json.loads(response.text)
+        response_dict = response.json()
 
         print(item["sensor"] + ": " + response_dict["state"] + "W")
         
