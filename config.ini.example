@@ -1,0 +1,6 @@
+[Home Assistant]
+api_base_url = http://homeassistant:8123/api/states/
+api_token = some-token-value
+sensor_grid = sensor.power_from_grid
+sensor_battery = sensor.battery_discharge
+sensor_solar = sensor.power_pv_array
