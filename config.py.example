@@ -1,0 +1,15 @@
+config = {
+    "api": {
+        "base_url": "http://homeassistant:8123/api/states/",
+        "token ": "api-token",
+    },
+    "sensors": {
+        "grid": "sensor.power_from_grid",
+        "battery": "sensor.battery_discharge",
+        "solar": "sensor.power_pv_array",
+    },
+    "wifi": {
+        "ssid": "your-wifi-name",
+        "password": "wifi-password",
+    }
+}
