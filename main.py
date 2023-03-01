@@ -1,7 +1,9 @@
 from time import sleep
 from machine import Pin, PWM
-import network
+from network import WLAN, STA_IF
 from urequests import get
+
+from config import config
 
 def led_ramp_up(pwm_leds, duty_step = 1):
     for duty in range(0, 65535, duty_step):
@@ -22,7 +24,7 @@ def led_pulse(pwm_leds, duty_step = 1):
 
 def led_on(pwm_led):
     led_current_state = 1 if pwm_led.duty_u16() > 1 else 0
-    
+
     if led_current_state == 1:
         return
     else:
@@ -31,7 +33,7 @@ def led_on(pwm_led):
 
 def led_off(pwm_led):
     led_current_state = 1 if pwm_led.duty_u16() > 1 else 0
-    
+
     if led_current_state == 0:
         return
     else:
@@ -52,15 +54,15 @@ pwm_green_led.freq(1000)
 
 items = [
     {
-        "sensor": "sensor.power_from_grid",
+        "sensor": config['sensors']['grid'],
         "led": pwm_red_led
     },
     {
-        "sensor": "sensor.battery_discharge",
+        "sensor": config['sensors']['battery'],
         "led": pwm_amber_led
     },
     {
-        "sensor": "sensor.power_pv_array",
+        "sensor": config['sensors']['solar'],
         "led": pwm_green_led
     }
 ]
@@ -85,12 +87,11 @@ for pwm_led in pwm_leds:
 for pwm_led in pwm_leds:
     led_ramp_up([pwm_led], 2)
 
-wlan = network.WLAN(network.STA_IF)
-wlan.active(True)
-wlan.connect('discworld', '12 Wallshead Way')
 
-home_assistant_api_url_base = "http://homeassistant:8123/api/states/"
-home_assistant_api_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJkMmFiMDdhODk0Yzc0YTU0YTM4NjU4Mzk2OGFlM2YwYyIsImlhdCI6MTY3NjY3MzM3NCwiZXhwIjoxOTkyMDMzMzc0fQ.IF6H2J2t1EZerY2B380U_s-XE7vNb9yjOgy6r78ikS0"
+# connect to the wifi network
+wlan = WLAN(STA_IF)
+wlan.active(True)
+wlan.connect(config['wifi']['ssid'], config['wifi']['password'])
 
 
 # ramp down all LEDs in turn
@@ -100,19 +101,18 @@ for pwm_led in pwm_leds:
 
 
 headers = {
-    "Authorization": "Bearer " + home_assistant_api_token,
+    "Authorization": "Bearer " + config['api']['token'],
     "content-type": "application/json",
 }
 
-#while True:
-for i in range(2):
+while True:
 
     for item in items:
 
         led = item['led']
         sensor = item['sensor']
 
-        response = get(home_assistant_api_url_base + sensor, headers = headers)
+        response = get(config['api']['base_url'] + sensor, headers = headers)
         response_dict = response.json()
 
         print(sensor + ": " + response_dict["state"] + "W")
@@ -130,3 +130,4 @@ for i in range(2):
     print("- sleeping 30s -")
     print("\n")
     sleep(30)
+
